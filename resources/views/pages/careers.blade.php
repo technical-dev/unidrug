@@ -23,49 +23,78 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
-        {{-- Left: Job Opening --}}
+        {{-- Left: Job Openings --}}
         <div class="lg:col-span-2 space-y-6">
-            {{-- We Are Recruiting --}}
-            <div class="bg-gradient-to-br from-brand-700 via-brand-800 to-brand-900 rounded-3xl overflow-hidden relative">
-                <div class="absolute top-0 right-0 w-40 h-40 bg-brand-600/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4"></div>
-                <div class="relative p-8">
-                    <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-1.5 text-xs font-bold text-brand-200 uppercase tracking-wider mb-4">
-                        <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                        Now Hiring
+            @forelse($jobOpenings as $job)
+                {{-- Job Card --}}
+                <div class="bg-gradient-to-br from-brand-700 via-brand-800 to-brand-900 rounded-3xl overflow-hidden relative">
+                    <div class="absolute top-0 right-0 w-40 h-40 bg-brand-600/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4"></div>
+                    <div class="relative p-8">
+                        <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-1.5 text-xs font-bold text-brand-200 uppercase tracking-wider mb-4">
+                            <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                            Now Hiring
+                        </div>
+                        <h2 class="text-xl font-extrabold text-white mb-2">{{ $job->title }}</h2>
+                        <div class="flex flex-wrap gap-3 mt-3">
+                            @if($job->location)
+                                <span class="inline-flex items-center gap-1.5 text-brand-200 text-xs">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+                                    {{ $job->location }}
+                                </span>
+                            @endif
+                            <span class="inline-flex items-center gap-1.5 text-brand-200 text-xs">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                {{ ucfirst(str_replace('-', ' ', $job->type)) }}
+                            </span>
+                        </div>
+                        @if($job->description)
+                            <p class="text-brand-200 text-sm mt-3">{{ $job->description }}</p>
+                        @endif
                     </div>
-                    <h2 class="text-xl font-extrabold text-white mb-2">Outdoor Sales Representative</h2>
-                    <p class="text-brand-200 text-sm">We have career opportunities for Outdoor Sales Representatives.</p>
                 </div>
-            </div>
 
-            {{-- Duties & Responsibilities --}}
-            <div class="bg-white rounded-2xl border border-gray-200/80 p-6 md:p-8">
-                <h3 class="text-lg font-extrabold text-gray-900 mb-5 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
-                    Duties & Responsibilities
-                </h3>
-                <ul class="space-y-3">
-                    @foreach([
-                        'Contact regular and prospective customers to demonstrate products, explain product features, and solicit orders.',
-                        'Recommend products to customers, based on customers\' needs and interests.',
-                        'Answer customers\' questions about products, prices, availability, product uses, and credit terms.',
-                        'Provide customers with product samples and catalogs.',
-                        'Identify prospective customers by using business directories, following leads from existing clients, and attending local trade shows and conferences.',
-                        'Monitor market conditions, product innovations, and competitors\' products, prices, and sales.',
-                        'Perform administrative duties, such as preparing sales budgets and reports, keeping sales records, and filing expense account reports.',
-                        'Obtain credit information about prospective customers.',
-                        'Prepare sales contracts and order forms.',
-                        'Negotiate details of contracts and payments.',
-                        'Check stock levels and reorder merchandise as necessary.',
-                        'Arrange and direct delivery of products.',
-                    ] as $duty)
-                    <li class="flex gap-3 text-sm text-gray-600">
-                        <svg class="w-5 h-5 text-brand-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        {{ $duty }}
-                    </li>
-                    @endforeach
-                </ul>
-            </div>
+                {{-- Responsibilities --}}
+                @if(!empty($job->responsibilities))
+                    <div class="bg-white rounded-2xl border border-gray-200/80 p-6 md:p-8">
+                        <h3 class="text-lg font-extrabold text-gray-900 mb-5 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
+                            Duties & Responsibilities
+                        </h3>
+                        <ul class="space-y-3">
+                            @foreach($job->responsibilities as $duty)
+                                <li class="flex gap-3 text-sm text-gray-600">
+                                    <svg class="w-5 h-5 text-brand-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    {{ $duty }}
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                {{-- Requirements --}}
+                @if(!empty($job->requirements))
+                    <div class="bg-white rounded-2xl border border-gray-200/80 p-6 md:p-8">
+                        <h3 class="text-lg font-extrabold text-gray-900 mb-5 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0118 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3l1.5 1.5 3-3.75"/></svg>
+                            Requirements
+                        </h3>
+                        <ul class="space-y-3">
+                            @foreach($job->requirements as $req)
+                                <li class="flex gap-3 text-sm text-gray-600">
+                                    <svg class="w-5 h-5 text-brand-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    {{ $req }}
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+            @empty
+                <div class="bg-white rounded-2xl border border-gray-200/80 p-8 text-center">
+                    <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0M12 12.75h.008v.008H12v-.008z"/></svg>
+                    <p class="font-semibold text-gray-500">No open positions at this time</p>
+                    <p class="text-sm text-gray-400 mt-1">Check back later or submit a general application below.</p>
+                </div>
+            @endforelse
         </div>
 
         {{-- Right: Application Form --}}
@@ -120,7 +149,10 @@
                         <select name="position" required
                                 class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-300 transition-all @error('position') border-red-300 @enderror">
                             <option value="">— Please choose an option —</option>
-                            <option value="Outdoor Sales Representative" {{ old('position') == 'Outdoor Sales Representative' ? 'selected' : '' }}>Outdoor Sales Representative</option>
+                            @foreach($jobOpenings as $job)
+                                <option value="{{ $job->title }}" {{ old('position') == $job->title ? 'selected' : '' }}>{{ $job->title }}</option>
+                            @endforeach
+                            <option value="General Application" {{ old('position') == 'General Application' ? 'selected' : '' }}>General Application</option>
                         </select>
                         @error('position')
                             <p class="text-xs text-red-500 mt-1">{{ $message }}</p>

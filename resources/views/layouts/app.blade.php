@@ -40,7 +40,7 @@
             <div class="flex items-center justify-between h-16 md:h-18">
                 {{-- Logo --}}
                 <a href="{{ url('/') }}" class="flex items-center shrink-0 group">
-                    <img src="{{ asset('images/logo.jpeg') }}" alt="Unidrug Lebanon" class="h-10 md:h-12 w-auto">
+                    <img src="{{ asset('images/logo.jpeg') }}" alt="Unidrug Lebanon" class="h-14 md:h-16 w-auto">
                 </a>
 
                 {{-- Desktop Search with Autocomplete --}}
@@ -246,7 +246,7 @@
                     {{-- Brand --}}
                     <div class="md:col-span-5">
                         <div class="flex items-center gap-3 mb-5">
-                            <img src="{{ asset('images/logo.jpeg') }}" alt="Unidrug Lebanon" class="h-10 w-auto brightness-0 invert">
+                            <img src="{{ asset('images/logo.jpeg') }}" alt="Unidrug Lebanon" class="h-14 w-auto brightness-0 invert">
                         </div>
                         <p class="text-gray-400 text-sm leading-relaxed max-w-sm">Your trusted source for professional & consumer cleaning products, hygiene supplies, and pet care essentials. Proudly serving Lebanon.</p>
                         <div class="flex gap-3 mt-6">

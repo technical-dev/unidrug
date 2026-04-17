@@ -26,6 +26,7 @@ Route::get('/contact', [PageController::class, 'contact'])->name('contact');
 Route::get('/about', [PageController::class, 'about'])->name('about');
 Route::get('/services', [PageController::class, 'services'])->name('services');
 Route::get('/careers', [PageController::class, 'careers'])->name('careers');
+Route::post('/contact', [PageController::class, 'submitContact'])->name('contact.submit');
 Route::post('/careers/apply', [PageController::class, 'applyJob'])->name('careers.apply');
 Route::post('/services/request', [PageController::class, 'requestService'])->name('services.request');
 Route::get('/page/{slug}', [PageController::class, 'show'])->name('pages.show');
@@ -78,6 +79,8 @@ use App\Http\Controllers\Admin\CategoryController as AdminCategory;
 use App\Http\Controllers\Admin\QuoteController as AdminQuote;
 use App\Http\Controllers\Admin\QuotePdfController as AdminQuotePdf;
 use App\Http\Controllers\Admin\ServiceRequestController as AdminServiceRequest;
+use App\Http\Controllers\Admin\ContactMessageController as AdminContactMessage;
+use App\Http\Controllers\Admin\JobOpeningController as AdminJobOpening;
 use App\Http\Controllers\Admin\SettingsController as AdminSettings;
 use App\Http\Controllers\Admin\SubscriberController as AdminSubscriber;
 
@@ -123,6 +126,13 @@ Route::prefix('admin')->group(function () {
         Route::get('service-requests', [AdminServiceRequest::class, 'index'])->name('admin.service-requests.index');
         Route::patch('service-requests/{serviceRequest}/status', [AdminServiceRequest::class, 'updateStatus'])->name('admin.service-requests.updateStatus');
         Route::delete('service-requests/{serviceRequest}', [AdminServiceRequest::class, 'destroy'])->name('admin.service-requests.destroy');
+
+        // Contact Messages
+        Route::get('contact-messages', [AdminContactMessage::class, 'index'])->name('admin.contact-messages.index');
+        Route::delete('contact-messages/{contactMessage}', [AdminContactMessage::class, 'destroy'])->name('admin.contact-messages.destroy');
+
+        // Job Openings (admin CRUD)
+        Route::resource('job-openings', AdminJobOpening::class)->names('admin.job-openings')->except('show');
 
         // Exports
         Route::get('export/products', [AdminExport::class, 'products'])->name('admin.export.products');

@@ -22,7 +22,19 @@
         <span class="text-gray-600 font-medium truncate max-w-[200px]">{{ $product->name }}</span>
     </nav>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 mb-20" x-data="{ mainImage: '{{ $product->featured_image ?? '' }}' }">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 mb-20" x-data="{
+        mainImage: '{{ $product->featured_image ?? '' }}',
+        selectedVariation: null,
+        variations: {{ $product->variations->map(fn($v) => ['id' => $v->id, 'name' => ucfirst($v->attribute_value ?? $v->name), 'price' => $v->price ? number_format($v->price, 2) : null, 'sku' => $v->sku, 'image' => $v->image])->toJson() }},
+        get displayPrice() {
+            if (this.selectedVariation && this.selectedVariation.price) return '$' + this.selectedVariation.price;
+            return '{{ $product->price ? '$' . $product->display_price : '' }}';
+        },
+        selectVariation(v) {
+            this.selectedVariation = v;
+            if (v.image) this.mainImage = v.image;
+        }
+    }">
         {{-- Image Gallery --}}
         <div class="space-y-4">
             <div class="bg-white rounded-2xl border border-gray-200/80 overflow-hidden aspect-square relative group">
@@ -98,12 +110,12 @@
 
             {{-- Price --}}
             <div class="mb-6 pb-6 border-b border-gray-100">
-                @if($product->price)
+                @if($product->price || $product->variations->count())
                     <div class="flex items-baseline gap-3">
                         @if($product->product_type === 'variable' && $product->variations->count())
-                            <span class="text-sm text-gray-400 font-medium">From</span>
+                            <span x-show="!selectedVariation" class="text-sm text-gray-400 font-medium">From</span>
                         @endif
-                        <span class="text-4xl font-extrabold text-gray-900">${{ $product->display_price }}</span>
+                        <span class="text-4xl font-extrabold text-gray-900" x-text="displayPrice">${{ $product->display_price }}</span>
                         <span class="text-sm text-gray-400">USD</span>
                     </div>
                 @else
@@ -121,28 +133,26 @@
                 </div>
             @endif
 
-            {{-- Variations --}}
+            {{-- Variations / Size Selector --}}
             @if($product->variations->count())
                 <div class="mb-8">
-                    <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Available Options</h3>
-                    <div class="space-y-2">
-                        @foreach($product->variations as $variation)
-                            <div class="flex items-center justify-between bg-gray-50/80 rounded-xl px-5 py-3.5 border border-gray-100 hover:border-brand-200 transition-colors">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-2 h-2 rounded-full bg-brand-400"></div>
-                                    <span class="font-semibold text-gray-800 text-sm">
-                                        {{ ucfirst($variation->attribute_value ?? $variation->name) }}
-                                    </span>
-                                    @if($variation->sku)
-                                        <span class="text-xs text-gray-300 font-mono">{{ $variation->sku }}</span>
-                                    @endif
-                                </div>
-                                @if($variation->price)
-                                    <span class="font-extrabold text-gray-900">${{ number_format($variation->price, 2) }}</span>
-                                @endif
-                            </div>
-                        @endforeach
+                    <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
+                        {{ $product->variations->first()->attribute_name ? ucfirst($product->variations->first()->attribute_name) : 'Choose Option' }}
+                    </h3>
+                    <div class="flex flex-wrap gap-2">
+                        <template x-for="v in variations" :key="v.id">
+                            <button type="button"
+                                    @click="selectVariation(v)"
+                                    :class="selectedVariation && selectedVariation.id === v.id
+                                        ? 'bg-brand-600 text-white border-brand-600 ring-2 ring-brand-600/30'
+                                        : 'bg-white text-gray-700 border-gray-200 hover:border-brand-300 hover:bg-brand-50'"
+                                    class="px-5 py-2.5 rounded-xl border font-semibold text-sm transition-all cursor-pointer">
+                                <span x-text="v.name"></span>
+                                <span x-show="v.price" class="ml-1 text-xs opacity-75" x-text="v.price ? '- $' + v.price : ''"></span>
+                            </button>
+                        </template>
                     </div>
+                    <p x-show="selectedVariation && selectedVariation.sku" class="text-xs text-gray-400 mt-2 font-mono" x-text="selectedVariation ? 'SKU: ' + selectedVariation.sku : ''"></p>
                 </div>
             @endif
 
@@ -152,10 +162,20 @@
                     @csrf
                     <input type="hidden" name="product_id" value="{{ $product->id }}">
                     <input type="hidden" name="quantity" value="1">
-                    <button type="submit" class="w-full inline-flex items-center justify-center gap-2 bg-brand-600 text-white py-3.5 px-6 rounded-xl font-bold text-sm hover:bg-brand-700 transition-all shadow-lg shadow-brand-600/20 hover:shadow-brand-600/30">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"/></svg>
-                        Add to Cart
-                    </button>
+                    <input type="hidden" name="variation_id" :value="selectedVariation ? selectedVariation.id : ''">
+                    @if($product->product_type === 'variable' && $product->variations->count())
+                        <button type="submit" x-bind:disabled="!selectedVariation"
+                                :class="selectedVariation ? 'bg-brand-600 hover:bg-brand-700 shadow-lg shadow-brand-600/20 hover:shadow-brand-600/30' : 'bg-gray-300 cursor-not-allowed'"
+                                class="w-full inline-flex items-center justify-center gap-2 text-white py-3.5 px-6 rounded-xl font-bold text-sm transition-all">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"/></svg>
+                            <span x-text="selectedVariation ? 'Add to Cart' : 'Select an Option'"></span>
+                        </button>
+                    @else
+                        <button type="submit" class="w-full inline-flex items-center justify-center gap-2 bg-brand-600 text-white py-3.5 px-6 rounded-xl font-bold text-sm hover:bg-brand-700 transition-all shadow-lg shadow-brand-600/20 hover:shadow-brand-600/30">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"/></svg>
+                            Add to Cart
+                        </button>
+                    @endif
                 </form>
                 <a href="{{ route('contact') }}" class="inline-flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-700 py-3.5 px-6 rounded-xl font-semibold text-sm hover:bg-gray-50 hover:border-gray-300 transition-all">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z"/></svg>

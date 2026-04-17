@@ -27,7 +27,15 @@
         <div class="md:col-span-3 bg-white rounded-2xl border border-gray-200/80 p-6 md:p-8">
             <h2 class="text-lg font-bold text-gray-900 mb-1">Send a message</h2>
             <p class="text-sm text-gray-400 mb-6">We'll get back to you within 24 hours.</p>
-            <form action="#" method="POST" class="space-y-5">
+
+            @if(session('success'))
+                <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl text-sm text-green-700 font-medium flex items-center gap-3">
+                    <svg class="w-5 h-5 text-green-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            <form action="{{ route('contact.submit') }}" method="POST" class="space-y-5">
                 @csrf
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div>
