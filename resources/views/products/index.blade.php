@@ -62,27 +62,78 @@
         </div>
     </div>
 
-    {{-- Category Chips --}}
-    <div class="mb-8 -mx-4 px-4 overflow-x-auto scrollbar-hide">
-        <div class="flex items-center gap-2 pb-2 min-w-max">
+    {{-- Category Filter --}}
+    @php
+        $parentCategories = \App\Models\Category::whereNull('parent_id')
+            ->where('is_active', true)
+            ->where('slug', '!=', 'uncategorized')
+            ->withCount('products')
+            ->with(['children' => fn($q) => $q->where('is_active', true)->withCount('products')->orderBy('name')])
+            ->orderBy('name')
+            ->get()
+            ->filter(fn($c) => $c->products_count > 0);
+
+        // Determine if the current category is a parent or a subcategory
+        $currentSlug = request('category');
+        $activeParent = null;
+        $activeChild = null;
+        if ($currentSlug) {
+            $activeParent = $parentCategories->firstWhere('slug', $currentSlug);
+            if (!$activeParent) {
+                // It might be a subcategory slug
+                foreach ($parentCategories as $pc) {
+                    $found = $pc->children->firstWhere('slug', $currentSlug);
+                    if ($found) {
+                        $activeChild = $found;
+                        $activeParent = $pc;
+                        break;
+                    }
+                }
+            }
+        }
+    @endphp
+    <div class="mb-8">
+        {{-- Parent Categories --}}
+        <div class="flex flex-wrap items-center gap-2">
             <a href="{{ route('products.index', array_filter(['search' => request('search'), 'sort' => request('sort')])) }}"
                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap
-                      {{ !request('category') ? 'bg-gray-900 text-white shadow-lg shadow-gray-900/20' : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300 hover:bg-gray-50' }}">
+                      {{ !$currentSlug ? 'bg-gray-900 text-white shadow-lg shadow-gray-900/20' : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300 hover:bg-gray-50' }}">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6z"/></svg>
                 All
             </a>
 
-            @foreach(\App\Models\Category::whereNull('parent_id')->where('is_active', true)->where('slug', '!=', 'uncategorized')->withCount('products')->orderBy('name')->get() as $cat)
-                @if($cat->products_count > 0)
-                    <a href="{{ route('products.index', array_filter(['category' => $cat->slug, 'search' => request('search'), 'sort' => request('sort')])) }}"
-                       class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap
-                              {{ request('category') === $cat->slug ? 'bg-brand-600 text-white shadow-lg shadow-brand-600/20' : 'bg-white text-gray-600 border border-gray-200 hover:border-brand-300 hover:text-brand-600 hover:bg-brand-50' }}">
-                        {{ $cat->name }}
-                        <span class="{{ request('category') === $cat->slug ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500' }} text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ $cat->products_count }}</span>
-                    </a>
-                @endif
+            @foreach($parentCategories as $cat)
+                @php
+                    $isActiveParent = $activeParent && $activeParent->id === $cat->id;
+                @endphp
+                <a href="{{ route('products.index', array_filter(['category' => $cat->slug, 'search' => request('search'), 'sort' => request('sort')])) }}"
+                   class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap
+                          {{ $isActiveParent ? 'bg-brand-600 text-white shadow-lg shadow-brand-600/20' : 'bg-white text-gray-600 border border-gray-200 hover:border-brand-300 hover:text-brand-600 hover:bg-brand-50' }}">
+                    {{ $cat->name }}
+                    <span class="{{ $isActiveParent ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500' }} text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ $cat->products_count }}</span>
+                </a>
             @endforeach
         </div>
+
+        {{-- Subcategories (shown when a parent with children is selected) --}}
+        @if($activeParent && $activeParent->children->filter(fn($c) => $c->products_count > 0)->count())
+            <div class="flex flex-wrap items-center gap-2 mt-3 pl-2 border-l-2 border-brand-200">
+                <a href="{{ route('products.index', array_filter(['category' => $activeParent->slug, 'search' => request('search'), 'sort' => request('sort')])) }}"
+                   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap
+                          {{ !$activeChild ? 'bg-brand-100 text-brand-700 ring-1 ring-brand-300' : 'bg-gray-50 text-gray-500 border border-gray-200 hover:border-brand-300 hover:text-brand-600 hover:bg-brand-50' }}">
+                    All {{ $activeParent->name }}
+                </a>
+
+                @foreach($activeParent->children->filter(fn($c) => $c->products_count > 0) as $sub)
+                    <a href="{{ route('products.index', array_filter(['category' => $sub->slug, 'search' => request('search'), 'sort' => request('sort')])) }}"
+                       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap
+                              {{ $activeChild && $activeChild->id === $sub->id ? 'bg-brand-100 text-brand-700 ring-1 ring-brand-300' : 'bg-gray-50 text-gray-500 border border-gray-200 hover:border-brand-300 hover:text-brand-600 hover:bg-brand-50' }}">
+                        {{ $sub->name }}
+                        <span class="{{ $activeChild && $activeChild->id === $sub->id ? 'bg-brand-200 text-brand-700' : 'bg-gray-100 text-gray-400' }} text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ $sub->products_count }}</span>
+                    </a>
+                @endforeach
+            </div>
+        @endif
     </div>
 
     {{-- Active Filters --}}
