@@ -107,3 +107,12 @@ nav[role="navigation"] .relative.inline-flex {
 .group:hover .cat-icon {
     transform: scale(1.1) rotate(3deg);
 }
+
+/* Hide scrollbar for category chips */
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}

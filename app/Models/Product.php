@@ -9,6 +9,9 @@ class Product extends Model
     protected $fillable = [
         'name',
         'slug',
+        'group_slug',
+        'variant_label',
+        'group_sort',
         'short_description',
         'description',
         'sku',
@@ -49,6 +52,31 @@ class Product extends Model
     public function tags()
     {
         return $this->belongsToMany(Tag::class);
+    }
+
+    /**
+     * Get sibling products in the same group (excluding self).
+     */
+    public function siblings()
+    {
+        if (!$this->group_slug) return collect();
+        return static::where('group_slug', $this->group_slug)
+            ->where('id', '!=', $this->id)
+            ->where('status', 'active')
+            ->orderBy('group_sort')
+            ->get();
+    }
+
+    /**
+     * Get all products in this group (including self).
+     */
+    public function groupMembers()
+    {
+        if (!$this->group_slug) return collect([$this]);
+        return static::where('group_slug', $this->group_slug)
+            ->where('status', 'active')
+            ->orderBy('group_sort')
+            ->get();
     }
 
     public function getDisplayPriceAttribute(): string
