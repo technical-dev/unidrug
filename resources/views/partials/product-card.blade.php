@@ -4,7 +4,7 @@
     $baseName = $hasGroup ? preg_replace('/\s*-\s*(Small|Medium|Large|Extra Large|S|M|L|XL|XXL)\s*$/i', '', $product->name) : $product->name;
     $cardId = 'pc-' . $product->id;
 @endphp
-<div class="group bg-white rounded-2xl border border-gray-200/80 overflow-hidden card-hover flex flex-col"
+<div class="group relative bg-white rounded-3xl border border-gray-200/70 overflow-hidden card-hover flex flex-col"
      @if($hasGroup)
      x-data="{
         selected: 0,
@@ -16,7 +16,7 @@
     <a :href="'{{ url('/products') }}/' + (typeof current !== 'undefined' ? current.slug : '{{ $product->slug }}')"
        href="{{ route('products.show', $product->slug) }}">
         {{-- Image --}}
-        <div class="aspect-square bg-gradient-to-br from-gray-50 to-white overflow-hidden relative shine-effect">
+        <div class="aspect-square product-image-bg overflow-hidden relative shine-effect">
             @if($hasGroup)
                 <template x-for="(m, i) in members" :key="m.id">
                     <img x-show="selected === i"
@@ -41,58 +41,59 @@
             @endif
 
             {{-- Badges --}}
-            <div class="absolute top-2.5 left-2.5 flex flex-col gap-1">
+            <div class="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
                 @if($hasGroup)
-                    <span class="inline-flex items-center px-2 py-0.5 bg-brand-600 text-white text-[9px] font-bold uppercase tracking-wider rounded-md shadow-sm">
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-brand-600 text-white text-[9px] font-bold uppercase tracking-[0.1em] rounded-full shadow-md shadow-brand-600/30 backdrop-blur-sm">
+                        <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6z"/></svg>
                         {{ count($members) }} sizes
                     </span>
                 @elseif($product->product_type === 'variable')
-                    <span class="inline-flex items-center px-2 py-0.5 bg-blue-600 text-white text-[9px] font-bold uppercase tracking-wider rounded-md shadow-sm">
+                    <span class="inline-flex items-center px-2.5 py-1 bg-blue-600 text-white text-[9px] font-bold uppercase tracking-[0.1em] rounded-full shadow-md shadow-blue-600/30">
                         Options
                     </span>
                 @endif
                 @if($product->stock_status !== 'instock')
-                    <span class="inline-flex items-center px-2 py-0.5 bg-red-500 text-white text-[9px] font-bold uppercase tracking-wider rounded-md shadow-sm">
+                    <span class="inline-flex items-center px-2.5 py-1 bg-red-500 text-white text-[9px] font-bold uppercase tracking-[0.1em] rounded-full shadow-md shadow-red-500/30">
                         Sold Out
                     </span>
                 @endif
             </div>
 
-            {{-- Arrow icon --}}
-            <div class="absolute bottom-2.5 right-2.5 opacity-0 group-hover:opacity-100 transform translate-y-1 group-hover:translate-y-0 transition-all">
-                <div class="w-8 h-8 bg-white/90 backdrop-blur-sm rounded-lg shadow-md flex items-center justify-center">
-                    <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+            {{-- View arrow on hover --}}
+            <div class="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300 z-10">
+                <div class="w-9 h-9 bg-brand-600 text-white rounded-xl shadow-lg shadow-brand-600/30 flex items-center justify-center">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
                 </div>
             </div>
         </div>
 
         {{-- Info --}}
-        <div class="p-3.5 md:p-4 pb-1.5 md:pb-2 flex-1">
+        <div class="p-4 md:p-5 pb-2 flex-1">
             @if($product->categories->count())
-                <p class="text-[10px] font-semibold text-brand-600 uppercase tracking-wider mb-1 truncate">
+                <p class="text-[10px] font-bold text-brand-600 uppercase tracking-[0.12em] mb-1.5 truncate">
                     {{ $product->categories->first()->name }}
                 </p>
             @endif
 
-            <h3 class="font-bold text-gray-900 text-[13px] leading-snug group-hover:text-brand-700 transition-colors line-clamp-2 mb-2 min-h-[2.25rem]">
+            <h3 class="font-display font-bold text-gray-900 text-[14px] leading-snug group-hover:text-brand-700 transition-colors line-clamp-2 mb-2.5 min-h-[2.5rem] tracking-tight">
                 {{ $baseName }}
             </h3>
 
             {{-- Price --}}
             <div class="flex items-baseline gap-1.5">
                 @if($hasGroup)
-                    <span class="text-base md:text-lg font-extrabold text-gray-900" x-text="'$' + current.price">
+                    <span class="font-display text-lg md:text-xl font-extrabold text-gray-900 tracking-tight" x-text="'$' + current.price">
                         ${{ number_format((float)($product->sale_price ?? $product->price), 2) }}
                     </span>
                 @elseif($product->price)
-                    <div class="flex items-baseline gap-1">
+                    <div class="flex items-baseline gap-1.5">
                         @if($product->product_type === 'variable')
-                            <span class="text-[9px] text-gray-400 font-medium uppercase">from</span>
+                            <span class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">from</span>
                         @endif
-                        <span class="text-base md:text-lg font-extrabold text-gray-900">${{ $product->display_price }}</span>
+                        <span class="font-display text-lg md:text-xl font-extrabold text-gray-900 tracking-tight">${{ $product->display_price }}</span>
                     </div>
                 @else
-                    <span class="text-xs font-medium text-gray-400">Contact for price</span>
+                    <span class="text-xs font-semibold text-gray-400">Contact for price</span>
                 @endif
             </div>
         </div>
@@ -100,12 +101,12 @@
 
     {{-- Variant Selector --}}
     @if($hasGroup)
-        <div class="px-3.5 md:px-4 pt-2 pb-1.5" @click.stop>
+        <div class="px-4 md:px-5 pt-2 pb-1.5" @click.stop>
             <div class="flex flex-wrap gap-1.5">
                 <template x-for="(m, i) in members" :key="m.id">
                     <button @click.prevent="selected = i"
-                            :class="selected === i ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'"
-                            class="px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition-all"
+                            :class="selected === i ? 'bg-gray-900 text-white border-gray-900 shadow-md shadow-gray-900/20' : 'bg-white text-gray-600 border-gray-200 hover:border-brand-400 hover:text-brand-700'"
+                            class="chip px-2.5 py-1 rounded-lg border text-[11px] font-semibold"
                             x-text="m.label">
                     </button>
                 </template>
@@ -114,7 +115,7 @@
     @endif
 
     {{-- Add to Cart --}}
-    <div class="px-3.5 md:px-4 pb-3.5 md:pb-4 pt-2 mt-auto">
+    <div class="px-4 md:px-5 pb-4 md:pb-5 pt-2 mt-auto">
         <form action="{{ route('cart.add') }}" method="POST">
             @csrf
             @if($hasGroup)
@@ -123,8 +124,8 @@
                 <input type="hidden" name="product_id" value="{{ $product->id }}">
             @endif
             <input type="hidden" name="quantity" value="1">
-            <button type="submit" class="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-brand-50 text-brand-700 text-xs font-bold hover:bg-brand-100 transition-all">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+            <button type="submit" class="group/btn w-full inline-flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-gray-900 text-white text-xs font-bold hover:bg-brand-600 hover:shadow-lg hover:shadow-brand-600/30 transition-all">
+                <svg class="w-3.5 h-3.5 transition-transform group-hover/btn:rotate-90" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
                 Add to Cart
             </button>
         </form>

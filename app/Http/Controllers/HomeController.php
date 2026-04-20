@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Banner;
+use App\Models\Bundle;
 use App\Models\Category;
 use App\Models\Post;
 use App\Models\Product;
@@ -29,11 +30,17 @@ class HomeController extends Controller
             ->orderBy('sort_order')
             ->get();
 
+        $bundles = Bundle::active()
+            ->with('products')
+            ->orderBy('sort_order')
+            ->limit(6)
+            ->get();
+
         $latestPosts = Post::where('status', 'published')
             ->latest()
             ->limit(3)
             ->get();
 
-        return view('home.index', compact('banners', 'featuredProducts', 'topCategories', 'latestPosts'));
+        return view('home.index', compact('banners', 'bundles', 'featuredProducts', 'topCategories', 'latestPosts'));
     }
 }

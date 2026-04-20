@@ -70,6 +70,7 @@ Route::get('/sitemap.xml', function () {
 // ────────────────────────────────────────────
 use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\BannerController as AdminBanner;
+use App\Http\Controllers\Admin\BundleController as AdminBundle;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
 use App\Http\Controllers\Admin\ExportController as AdminExport;
 use App\Http\Controllers\Admin\JobApplicationController as AdminJobApplication;
@@ -99,6 +100,9 @@ Route::prefix('admin')->group(function () {
 
         // Categories
         Route::resource('categories', AdminCategory::class)->names('admin.categories');
+
+        // Bundles / Sales
+        Route::resource('bundles', AdminBundle::class)->names('admin.bundles')->except('show');
 
         // Banners
         Route::resource('banners', AdminBanner::class)->names('admin.banners')->except('show');
