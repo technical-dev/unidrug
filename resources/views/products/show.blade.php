@@ -22,13 +22,37 @@
         <span class="text-gray-600 font-medium truncate max-w-[200px]">{{ $product->name }}</span>
     </nav>
 
+    @php
+        $hasGroupPicker = $groupMembers->count() > 1;
+        $currentMemberIndex = $hasGroupPicker ? $groupMembers->search(fn($m) => $m->id === $product->id) : 0;
+        $groupMembersJs = $groupMembers->map(fn($m) => [
+            'id' => $m->id,
+            'slug' => $m->slug,
+            'name' => $m->variant_label ?: $m->name,
+            'price' => $m->sale_price ?? $m->price,
+            'price_formatted' => $m->price ? number_format((float)($m->sale_price ?? $m->price), 2) : null,
+            'sku' => $m->sku,
+            'image' => $m->featured_image,
+            'stock_status' => $m->stock_status,
+        ])->values();
+    @endphp
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 mb-20" x-data="{
         mainImage: '{{ $product->featured_image ?? '' }}',
         selectedVariation: null,
+        groupMembers: {{ $groupMembersJs->toJson() }},
+        groupIndex: {{ (int) $currentMemberIndex }},
+        get currentMember() { return this.groupMembers[this.groupIndex] || null; },
         variations: {{ $product->variations->map(fn($v) => ['id' => $v->id, 'name' => ucfirst($v->attribute_value ?? $v->name), 'price' => $v->price ? number_format($v->price, 2) : null, 'sku' => $v->sku, 'image' => $v->image])->toJson() }},
         get displayPrice() {
+            if (this.currentMember && this.currentMember.price_formatted) return '$' + this.currentMember.price_formatted;
             if (this.selectedVariation && this.selectedVariation.price) return '$' + this.selectedVariation.price;
             return '{{ $product->price ? '$' . $product->display_price : '' }}';
+        },
+        selectGroupMember(i) {
+            this.groupIndex = i;
+            const m = this.groupMembers[i];
+            if (m && m.image) this.mainImage = m.image;
+            if (m && m.slug) window.history.replaceState(null, '', '{{ url('/products') }}/' + m.slug);
         },
         selectVariation(v) {
             this.selectedVariation = v;
@@ -88,12 +112,17 @@
                 @endforeach
             </div>
 
-            <h1 class="text-2xl md:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight mb-3">{{ $product->name }}</h1>
+            @php
+                $displayName = $hasGroupPicker
+                    ? trim(preg_replace('/\s*-\s*('.preg_quote($product->variant_label ?: '', '/').'|Small|Medium|Large|Extra Large|S|M|L|XL|XXL)\s*$/i', '', $product->name))
+                    : $product->name;
+            @endphp
+            <h1 class="text-2xl md:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight mb-3">{{ $displayName }}</h1>
 
             {{-- SKU & Stock --}}
             <div class="flex items-center gap-4 mb-6">
                 @if($product->sku)
-                    <span class="text-sm text-gray-400">SKU: <span class="text-gray-500 font-mono">{{ $product->sku }}</span></span>
+                    <span class="text-sm text-gray-400">SKU: <span class="text-gray-500 font-mono" x-text="currentMember && currentMember.sku ? currentMember.sku : '{{ $product->sku }}'">{{ $product->sku }}</span></span>
                 @endif
                 @if($product->stock_status === 'instock')
                     <span class="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full uppercase tracking-wide">
@@ -133,11 +162,31 @@
                 </div>
             @endif
 
-            {{-- Variations / Size Selector --}}
-            @if($product->variations->count())
+            {{-- Group-sibling Selector (Size / Color / etc.) --}}
+            @if($hasGroupPicker)
                 <div class="mb-8">
                     <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
-                        {{ $product->variations->first()->attribute_name ? ucfirst($product->variations->first()->attribute_name) : 'Choose Option' }}
+                        {{ $product->attribute_name ?: 'Choose Option' }}
+                    </h3>
+                    <div class="flex flex-wrap gap-2">
+                        <template x-for="(m, i) in groupMembers" :key="m.id">
+                            <button type="button"
+                                    @click="selectGroupMember(i)"
+                                    :class="groupIndex === i
+                                        ? 'bg-brand-600 text-white border-brand-600 ring-2 ring-brand-600/30'
+                                        : 'bg-white text-gray-700 border-gray-200 hover:border-brand-300 hover:bg-brand-50'"
+                                    class="px-5 py-2.5 rounded-xl border font-semibold text-sm transition-all cursor-pointer">
+                                <span x-text="m.name"></span>
+                                <span x-show="m.price_formatted" class="ml-1 text-xs opacity-75" x-text="'- $' + m.price_formatted"></span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+            @elseif($product->variations->count())
+                {{-- Legacy variations fallback (WP Case/Pack-style) --}}
+                <div class="mb-8">
+                    <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
+                        {{ $product->attribute_name ?: ($product->variations->first()->attribute_name ? ucfirst($product->variations->first()->attribute_name) : 'Choose Option') }}
                     </h3>
                     <div class="flex flex-wrap gap-2">
                         <template x-for="v in variations" :key="v.id">
@@ -160,7 +209,7 @@
             <div class="flex flex-col sm:flex-row gap-3 mt-auto">
                 <form action="{{ route('cart.add') }}" method="POST" class="flex-1">
                     @csrf
-                    <input type="hidden" name="product_id" value="{{ $product->id }}">
+                    <input type="hidden" name="product_id" :value="currentMember ? currentMember.id : {{ $product->id }}" value="{{ $product->id }}">
                     <input type="hidden" name="quantity" value="1">
                     <input type="hidden" name="variation_id" :value="selectedVariation ? selectedVariation.id : ''">
                     @if($product->product_type === 'variable' && $product->variations->count())

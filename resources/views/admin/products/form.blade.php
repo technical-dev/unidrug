@@ -118,6 +118,50 @@
         </div>
     </div>
 
+    {{-- Variant Group --}}
+    <div class="bg-white rounded-2xl border border-gray-200 p-6 space-y-5">
+        <div>
+            <h2 class="text-base font-bold text-gray-900">Variant Group</h2>
+            <p class="text-xs text-gray-500 mt-0.5">
+                Link this product to others as size/color/etc. variants. Products sharing a <strong>Group Key</strong> are shown as one card on the listing; the detail page lets the customer switch between them.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">Group Key</label>
+                <input type="text" name="group_slug" value="{{ old('group_slug', $product?->group_slug) }}"
+                       class="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 placeholder:text-gray-400 font-mono"
+                       placeholder="e.g., vaccum-bag (leave empty for no group)">
+                <p class="text-xs text-gray-400 mt-1">All products sharing this exact key will display as one card with chips. Auto-slugified on save.</p>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">Attribute Name</label>
+                <input type="text" name="attribute_name" value="{{ old('attribute_name', $product?->attribute_name) }}"
+                       class="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 placeholder:text-gray-400"
+                       placeholder="e.g., Size, Color, Scent">
+                <p class="text-xs text-gray-400 mt-1">The label shown above the chips on the detail page.</p>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">Variant Label</label>
+                <input type="text" name="variant_label" value="{{ old('variant_label', $product?->variant_label) }}"
+                       class="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 placeholder:text-gray-400"
+                       placeholder="e.g., Small, Red, Lavender">
+                <p class="text-xs text-gray-400 mt-1">What this specific product variant is called. Shown on the chip.</p>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">Sort Order</label>
+                <input type="number" name="group_sort" value="{{ old('group_sort', $product?->group_sort ?? 0) }}"
+                       class="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 placeholder:text-gray-400"
+                       placeholder="0">
+                <p class="text-xs text-gray-400 mt-1">Lower numbers appear first (Small=1, Medium=2, Large=3).</p>
+            </div>
+        </div>
+    </div>
+
     {{-- Variations Section (only visible when product_type is "variable") --}}
     <div class="bg-white rounded-2xl border border-gray-200 p-6 space-y-5" x-show="productType === 'variable'" x-transition>
         <div class="flex items-center justify-between">

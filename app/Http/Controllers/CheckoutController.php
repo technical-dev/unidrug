@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\NewOrderAdmin;
+use App\Mail\OrderReceivedCustomer;
 use App\Models\QuoteRequest;
+use App\Models\Setting;
 use App\Services\CartService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class CheckoutController extends Controller
 {
@@ -88,6 +92,23 @@ class CheckoutController extends Controller
         ]);
 
         $this->cart->clear();
+
+        // Notify admin
+        try {
+            $adminTo = Setting::get('email', config('mail.from.address'));
+            if ($adminTo && $adminTo !== 'hello@example.com') {
+                Mail::to($adminTo)->send(new NewOrderAdmin($quote));
+            }
+        } catch (\Throwable $e) {
+            \Log::warning('Failed to send admin order email: ' . $e->getMessage());
+        }
+
+        // Notify customer
+        try {
+            Mail::to($quote->email)->send(new OrderReceivedCustomer($quote));
+        } catch (\Throwable $e) {
+            \Log::warning('Failed to send customer order email: ' . $e->getMessage());
+        }
 
         return redirect()->route('checkout.success', $quote);
     }

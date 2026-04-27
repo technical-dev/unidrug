@@ -51,12 +51,13 @@ class AutoGroupProducts extends Command
 
                 $changed = $p->group_slug !== $slug
                     || $p->variant_label !== $label
-                    || (int) $p->group_sort !== $order;
+                    || (int) $p->group_sort !== $order
+                    || $p->attribute_name !== 'Size';
 
                 if (! $changed) continue;
 
                 $this->line(sprintf(
-                    '  %s  →  group=%s  label=%s  sort=%d',
+                    '  %s  →  group=%s  label=%s  sort=%d  attr=Size',
                     $p->name, $slug, $label, $order
                 ));
 
@@ -64,6 +65,7 @@ class AutoGroupProducts extends Command
                     $p->group_slug = $slug;
                     $p->variant_label = $label;
                     $p->group_sort = $order;
+                    $p->attribute_name = 'Size';
                     $p->save();
                 }
                 $updated++;

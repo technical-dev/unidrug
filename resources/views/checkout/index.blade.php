@@ -96,7 +96,7 @@
                             <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">City / Area <span class="text-red-400">*</span></label>
                             <select name="city" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-300 transition-all @error('city') border-red-300 @enderror">
                                 <option value="">— Select city —</option>
-                                @foreach(['Beirut', 'Tripoli', 'Sidon (Saida)', 'Tyre (Sour)', 'Jounieh', 'Byblos (Jbeil)', 'Baalbek', 'Zahle', 'Nabatieh', 'Batroun', 'Aley', 'Broummana', 'Beit Mery', 'Chouf', 'Keserwan', 'Metn', 'Akkar', 'Hermel', 'Rashaya', 'Hasbaya', 'Koura', 'Zgharta', 'Bsharri', 'Minieh-Danniyeh', 'Jezzine'] as $city)
+                                @foreach(['Beirut', 'Tripoli', 'Sidon (Saida)', 'Tyre (Sour)', 'Jounieh', 'Byblos (Jbeil)', 'Baalbek', 'Zahle', 'Nabatieh', 'Batroun', 'Aley', 'Broummana', 'Beit Mery', 'Chouf', 'Jdeideh', 'Keserwan', 'Metn', 'Akkar', 'Hermel', 'Rashaya', 'Hasbaya', 'Koura', 'Zgharta', 'Bsharri', 'Minieh-Danniyeh', 'Jezzine'] as $city)
                                     <option value="{{ $city }}" {{ old('city') === $city ? 'selected' : '' }}>{{ $city }}</option>
                                 @endforeach
                             </select>

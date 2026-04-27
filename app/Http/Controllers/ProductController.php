@@ -39,7 +39,24 @@ class ProductController extends Controller
                 $query->latest();
                 break;
             default:
-                $query->latest();
+                // Manager-requested order:
+                // 1) Hygiene Products for Professionals
+                // 2) Hygiene Products for Consumers
+                // 3) Coffee Products
+                // 4) Pet Products
+                $priorityCase = "(
+                    SELECT MIN(CASE c.slug
+                        WHEN 'professional' THEN 1
+                        WHEN 'consumer'     THEN 2
+                        WHEN 'coffee'       THEN 3
+                        WHEN 'pet'          THEN 4
+                        ELSE 99
+                    END)
+                    FROM category_product cp
+                    JOIN categories c ON c.id = cp.category_id
+                    WHERE cp.product_id = products.id
+                )";
+                $query->orderByRaw("$priorityCase ASC, products.name ASC");
                 break;
         }
 
@@ -92,8 +109,18 @@ class ProductController extends Controller
             ->with('variations', 'images', 'categories')
             ->firstOrFail();
 
+        $groupMembers = $product->group_slug
+            ? Product::where('group_slug', $product->group_slug)
+                ->where('status', 'active')
+                ->orderBy('group_sort')
+                ->get()
+            : collect();
+
         $relatedProducts = Product::where('status', 'active')
             ->where('id', '!=', $product->id)
+            ->when($product->group_slug, fn($q) => $q->where(function ($q) use ($product) {
+                $q->whereNull('group_slug')->orWhere('group_slug', '!=', $product->group_slug);
+            }))
             ->whereHas('categories', function ($q) use ($product) {
                 $q->whereIn('categories.id', $product->categories->pluck('id'));
             })
@@ -101,6 +128,6 @@ class ProductController extends Controller
             ->limit(4)
             ->get();
 
-        return view('products.show', compact('product', 'relatedProducts'));
+        return view('products.show', compact('product', 'relatedProducts', 'groupMembers'));
     }
 }

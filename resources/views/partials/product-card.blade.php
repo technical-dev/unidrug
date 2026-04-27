@@ -2,33 +2,15 @@
     $members = $groupMembers ?? [];
     $hasGroup = count($members) > 1;
     $baseName = $hasGroup ? preg_replace('/\s*-\s*(Small|Medium|Large|Extra Large|S|M|L|XL|XXL)\s*$/i', '', $product->name) : $product->name;
-    $cardId = 'pc-' . $product->id;
+    $groupBadgeLabel = $hasGroup
+        ? ($product->attribute_name ? count($members) . ' ' . Str::plural(strtolower($product->attribute_name), count($members)) : count($members) . ' options')
+        : null;
 @endphp
-<div class="group relative bg-white rounded-3xl border border-gray-200/70 overflow-hidden card-hover flex flex-col"
-     @if($hasGroup)
-     x-data="{
-        selected: 0,
-        members: @js(collect($members)->map(fn($m) => ['id' => $m->id, 'slug' => $m->slug, 'label' => $m->variant_label, 'price' => number_format((float)($m->sale_price ?? $m->price), 2), 'image' => $m->featured_image, 'sku' => $m->sku])->values()),
-        get current() { return this.members[this.selected] || this.members[0]; }
-     }"
-     @endif
->
-    <a :href="'{{ url('/products') }}/' + (typeof current !== 'undefined' ? current.slug : '{{ $product->slug }}')"
-       href="{{ route('products.show', $product->slug) }}">
+<div class="group relative bg-white rounded-3xl border border-gray-200/70 overflow-hidden card-hover flex flex-col">
+    <a href="{{ route('products.show', $product->slug) }}" class="flex flex-col flex-1">
         {{-- Image --}}
         <div class="aspect-square product-image-bg overflow-hidden relative shine-effect">
-            @if($hasGroup)
-                <template x-for="(m, i) in members" :key="m.id">
-                    <img x-show="selected === i"
-                         :src="m.image || ''"
-                         :alt="m.label"
-                         class="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
-                         loading="lazy"
-                         x-transition:enter="transition ease-out duration-200"
-                         x-transition:enter-start="opacity-0"
-                         x-transition:enter-end="opacity-100">
-                </template>
-            @elseif($product->featured_image)
+            @if($product->featured_image)
                 <img src="{{ $product->featured_image }}" alt="{{ $product->name }}"
                      class="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
                      loading="lazy">
@@ -45,7 +27,7 @@
                 @if($hasGroup)
                     <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-brand-600 text-white text-[9px] font-bold uppercase tracking-[0.1em] rounded-full shadow-md shadow-brand-600/30 backdrop-blur-sm">
                         <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6z"/></svg>
-                        {{ count($members) }} sizes
+                        {{ $groupBadgeLabel }}
                     </span>
                 @elseif($product->product_type === 'variable')
                     <span class="inline-flex items-center px-2.5 py-1 bg-blue-600 text-white text-[9px] font-bold uppercase tracking-[0.1em] rounded-full shadow-md shadow-blue-600/30">
@@ -81,10 +63,14 @@
 
             {{-- Price --}}
             <div class="flex items-baseline gap-1.5">
-                @if($hasGroup)
-                    <span class="font-display text-lg md:text-xl font-extrabold text-gray-900 tracking-tight" x-text="'$' + current.price">
-                        ${{ number_format((float)($product->sale_price ?? $product->price), 2) }}
-                    </span>
+                @php
+                    $memberPrices = $hasGroup
+                        ? collect($members)->map(fn($m) => (float)($m->sale_price ?? $m->price))->filter()->values()
+                        : collect();
+                @endphp
+                @if($hasGroup && $memberPrices->isNotEmpty())
+                    <span class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">from</span>
+                    <span class="font-display text-lg md:text-xl font-extrabold text-gray-900 tracking-tight">${{ number_format($memberPrices->min(), 2) }}</span>
                 @elseif($product->price)
                     <div class="flex items-baseline gap-1.5">
                         @if($product->product_type === 'variable')
@@ -99,35 +85,24 @@
         </div>
     </a>
 
-    {{-- Variant Selector --}}
-    @if($hasGroup)
-        <div class="px-4 md:px-5 pt-2 pb-1.5" @click.stop>
-            <div class="flex flex-wrap gap-1.5">
-                <template x-for="(m, i) in members" :key="m.id">
-                    <button @click.prevent="selected = i"
-                            :class="selected === i ? 'bg-gray-900 text-white border-gray-900 shadow-md shadow-gray-900/20' : 'bg-white text-gray-600 border-gray-200 hover:border-brand-400 hover:text-brand-700'"
-                            class="chip px-2.5 py-1 rounded-lg border text-[11px] font-semibold"
-                            x-text="m.label">
-                    </button>
-                </template>
-            </div>
-        </div>
-    @endif
-
-    {{-- Add to Cart --}}
+    {{-- Add to Cart / Choose option --}}
     <div class="px-4 md:px-5 pb-4 md:pb-5 pt-2 mt-auto">
-        <form action="{{ route('cart.add') }}" method="POST">
-            @csrf
-            @if($hasGroup)
-                <input type="hidden" name="product_id" :value="current.id" value="{{ $product->id }}">
-            @else
+        @if($hasGroup || $product->product_type === 'variable')
+            <a href="{{ route('products.show', $product->slug) }}"
+               class="group/btn w-full inline-flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-gray-900 text-white text-xs font-bold hover:bg-brand-600 hover:shadow-lg hover:shadow-brand-600/30 transition-all">
+                Choose {{ $product->attribute_name ?: 'option' }}
+                <svg class="w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+            </a>
+        @else
+            <form action="{{ route('cart.add') }}" method="POST">
+                @csrf
                 <input type="hidden" name="product_id" value="{{ $product->id }}">
-            @endif
-            <input type="hidden" name="quantity" value="1">
-            <button type="submit" class="group/btn w-full inline-flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-gray-900 text-white text-xs font-bold hover:bg-brand-600 hover:shadow-lg hover:shadow-brand-600/30 transition-all">
-                <svg class="w-3.5 h-3.5 transition-transform group-hover/btn:rotate-90" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-                Add to Cart
-            </button>
-        </form>
+                <input type="hidden" name="quantity" value="1">
+                <button type="submit" class="group/btn w-full inline-flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-gray-900 text-white text-xs font-bold hover:bg-brand-600 hover:shadow-lg hover:shadow-brand-600/30 transition-all">
+                    <svg class="w-3.5 h-3.5 transition-transform group-hover/btn:rotate-90" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                    Add to Cart
+                </button>
+            </form>
+        @endif
     </div>
 </div>

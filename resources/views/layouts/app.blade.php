@@ -78,7 +78,7 @@
                             </svg>
                         </div>
                         <input type="text" name="search" x-model="query" @input="search()" @focus="if(results.length) open = true"
-                               placeholder="Search products, categories…"
+                               placeholder="Search."
                                autocomplete="off"
                                class="w-full pl-11 pr-4 py-2.5 bg-surface-100 border border-transparent rounded-full text-sm placeholder:text-gray-400 focus:bg-white focus:border-brand-300 focus:ring-4 focus:ring-brand-500/10 focus:outline-none transition-all">
                         {{-- Autocomplete dropdown --}}
@@ -112,25 +112,17 @@
                     @php
                         $currentRoute = request()->route()?->getName();
                     @endphp
-                    <a href="{{ route('products.index') }}"
-                       class="px-4 py-2 rounded-xl text-sm font-medium transition-all {{ $currentRoute === 'products.index' ? 'bg-brand-50 text-brand-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
-                        Products
-                    </a>
-                    <a href="{{ route('categories.index') }}"
-                       class="px-4 py-2 rounded-xl text-sm font-medium transition-all {{ $currentRoute === 'categories.index' ? 'bg-brand-50 text-brand-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
-                        Categories
-                    </a>
                     <a href="{{ route('about') }}"
                        class="px-4 py-2 rounded-xl text-sm font-medium transition-all {{ $currentRoute === 'about' ? 'bg-brand-50 text-brand-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
                         About
                     </a>
+                    <a href="{{ route('products.index') }}"
+                       class="px-4 py-2 rounded-xl text-sm font-medium transition-all {{ $currentRoute === 'products.index' ? 'bg-brand-50 text-brand-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
+                        Products
+                    </a>
                     <a href="{{ route('services') }}"
                        class="px-4 py-2 rounded-xl text-sm font-medium transition-all {{ $currentRoute === 'services' ? 'bg-brand-50 text-brand-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
                         Services
-                    </a>
-                    <a href="{{ route('blog.index') }}"
-                       class="px-4 py-2 rounded-xl text-sm font-medium transition-all {{ str_starts_with($currentRoute ?? '', 'blog') ? 'bg-brand-50 text-brand-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
-                        Blog
                     </a>
                     <a href="{{ route('careers') }}"
                        class="px-4 py-2 rounded-xl text-sm font-medium transition-all {{ $currentRoute === 'careers' ? 'bg-brand-50 text-brand-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
@@ -181,7 +173,7 @@
         <div x-show="searchOpen" x-cloak x-transition class="md:hidden border-t border-gray-100 px-4 py-3 bg-white">
             <form action="{{ route('products.index') }}" method="GET">
                 <input type="text" name="search" value="{{ request('search') }}"
-                       placeholder="Search products..."
+                       placeholder="Search."
                        class="w-full px-4 py-2.5 bg-gray-100 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-brand-500 focus:outline-none border border-transparent focus:border-brand-300">
             </form>
         </div>
@@ -189,25 +181,17 @@
         {{-- Mobile Menu --}}
         <div x-show="mobileMenu" x-cloak x-transition.origin.top class="md:hidden border-t border-gray-100 bg-white shadow-lg">
             <nav class="px-4 py-4 space-y-1">
-                <a href="{{ route('products.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium {{ $currentRoute === 'products.index' ? 'bg-brand-50 text-brand-700' : 'text-gray-700 hover:bg-gray-50' }}">
-                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                    Products
-                </a>
-                <a href="{{ route('categories.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium {{ $currentRoute === 'categories.index' ? 'bg-brand-50 text-brand-700' : 'text-gray-700 hover:bg-gray-50' }}">
-                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-                    Categories
-                </a>
                 <a href="{{ route('about') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium {{ $currentRoute === 'about' ? 'bg-brand-50 text-brand-700' : 'text-gray-700 hover:bg-gray-50' }}">
                     <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z"/></svg>
                     About
                 </a>
+                <a href="{{ route('products.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium {{ $currentRoute === 'products.index' ? 'bg-brand-50 text-brand-700' : 'text-gray-700 hover:bg-gray-50' }}">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                    Products
+                </a>
                 <a href="{{ route('services') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium {{ $currentRoute === 'services' ? 'bg-brand-50 text-brand-700' : 'text-gray-700 hover:bg-gray-50' }}">
                     <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75a4.5 4.5 0 01-4.884 4.484c-1.076-.091-2.264.071-2.95.904l-7.152 8.684a2.548 2.548 0 11-3.586-3.586l8.684-7.152c.833-.686.995-1.874.904-2.95a4.5 4.5 0 016.336-4.486l-3.276 3.276a3.004 3.004 0 002.25 2.25l3.276-3.276c.256.565.398 1.192.398 1.852z"/></svg>
                     Services
-                </a>
-                <a href="{{ route('blog.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium {{ str_starts_with($currentRoute ?? '', 'blog') ? 'bg-brand-50 text-brand-700' : 'text-gray-700 hover:bg-gray-50' }}">
-                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 01-2.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 002.25 2.25h13.5M6 7.5h3v3H6v-3z"/></svg>
-                    Blog
                 </a>
                 <a href="{{ route('careers') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium {{ $currentRoute === 'careers' ? 'bg-brand-50 text-brand-700' : 'text-gray-700 hover:bg-gray-50' }}">
                     <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0M12 12.75h.008v.008H12v-.008z"/></svg>

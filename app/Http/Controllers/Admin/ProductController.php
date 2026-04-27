@@ -51,6 +51,10 @@ class ProductController extends Controller
             'is_featured'       => 'boolean',
             'is_active'         => 'boolean',
             'categories'        => 'array',
+            'group_slug'        => 'nullable|string|max:255',
+            'variant_label'     => 'nullable|string|max:100',
+            'group_sort'        => 'nullable|integer',
+            'attribute_name'    => 'nullable|string|max:100',
             'variations'        => 'nullable|array',
             'variations.*.name' => 'required_with:variations|string|max:255',
             'variations.*.sku'  => 'nullable|string|max:100',
@@ -63,6 +67,7 @@ class ProductController extends Controller
             'variations.*.sort_order'      => 'nullable|integer',
         ]);
 
+        $data['group_slug'] = !empty($data['group_slug']) ? Str::slug($data['group_slug']) : null;
         $data['slug'] = $data['slug'] ?: Str::slug($data['name']);
         $data['is_featured'] = $request->boolean('is_featured');
         $data['is_active'] = $request->boolean('is_active');
@@ -129,6 +134,10 @@ class ProductController extends Controller
             'is_featured'       => 'boolean',
             'is_active'         => 'boolean',
             'categories'        => 'array',
+            'group_slug'        => 'nullable|string|max:255',
+            'variant_label'     => 'nullable|string|max:100',
+            'group_sort'        => 'nullable|integer',
+            'attribute_name'    => 'nullable|string|max:100',
             'variations'        => 'nullable|array',
             'variations.*.id'   => 'nullable|integer',
             'variations.*.name' => 'required_with:variations|string|max:255',
@@ -145,6 +154,7 @@ class ProductController extends Controller
 
         $data['is_featured'] = $request->boolean('is_featured');
         $data['is_active'] = $request->boolean('is_active');
+        $data['group_slug'] = !empty($data['group_slug']) ? Str::slug($data['group_slug']) : null;
         if (empty($data['slug'])) {
             $data['slug'] = Str::slug($data['name']);
         }

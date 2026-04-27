@@ -12,6 +12,7 @@ class Product extends Model
         'group_slug',
         'variant_label',
         'group_sort',
+        'attribute_name',
         'short_description',
         'description',
         'sku',
